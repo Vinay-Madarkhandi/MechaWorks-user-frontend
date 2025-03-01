@@ -4,14 +4,14 @@ import {
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "@/utils";
 
 export const Appbar = () => {
   const { publicKey, signMessage } = useWallet();
 
-  async function signAndSend() {
+  const signAndSend = useCallback(async () => {
     if (!publicKey) {
       return;
     }
@@ -25,11 +25,11 @@ export const Appbar = () => {
     });
 
     localStorage.setItem("token", response.data.token);
-  }
+  }, [publicKey, signMessage]);
 
   useEffect(() => {
     signAndSend();
-  }, [publicKey]);
+  }, [signAndSend]); // Now using the memoized function in the dependency array
 
   return (
     <div className="flex justify-between border-b border-violet-500 pb-2 pt-2 bg-black">

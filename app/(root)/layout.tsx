@@ -22,7 +22,7 @@ export default function RootLayout({
   const endpoint =
     "https://white-smart-field.solana-testnet.quiknode.pro/bd015c989befc6aba1cc9d74f7d5b15c4a70c9f7";
 
-  const wallets = useMemo(() => [], [network]);
+  const wallets = useMemo(() => [], []);
 
   return (
     <ConnectionProvider endpoint={endpoint}>
