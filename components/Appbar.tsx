@@ -15,7 +15,7 @@ export const Appbar = () => {
     if (!publicKey) {
       return;
     }
-    const message = new TextEncoder().encode("Sign into mechanical turks");
+    const message = new TextEncoder().encode("Sign into MechaWorks Business side");
     const signature = await signMessage?.(message);
     console.log(signature);
     console.log(publicKey);
