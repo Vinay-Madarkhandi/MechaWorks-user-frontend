@@ -5,8 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MechaWorks Business",
-  description: "App for Business side to label their data",
+  title: "MechaWorks",
+  description:
+    "Decentralized data labeling platform - Create tasks and get your data labeled on the blockchain",
 };
 
 export default function RootLayout({
