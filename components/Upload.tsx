@@ -180,14 +180,32 @@ export const Upload = () => {
 
       toast.success("Transaction sent! Waiting for confirmation...");
 
-      await connection.confirmTransaction(
-        {
-          blockhash,
-          lastValidBlockHeight,
+      // Use WebSocket for real-time confirmation instead of polling
+      const confirmationPromise = new Promise((resolve, reject) => {
+        const subscriptionId = connection.onSignature(
           signature,
-        },
-        "confirmed"
-      );
+          (result, context) => {
+            if (result.err) {
+              reject(new Error("Transaction failed"));
+            } else {
+              resolve(result);
+            }
+          },
+          "finalized"
+        );
+
+        // Set a timeout in case WebSocket doesn't respond
+        setTimeout(() => {
+          connection.removeSignatureListener(subscriptionId);
+          reject(new Error("Transaction confirmation timeout"));
+        }, 60000); // 60 second timeout
+      });
+
+      await confirmationPromise;
+
+      // Small additional wait for backend indexing
+      toast.success("Payment finalized! Processing...");
+      await new Promise((resolve) => setTimeout(resolve, 3000)); // Just 3 seconds now
 
       setTxSignature(signature);
       toast.success("Payment successful! You can now submit your task.");

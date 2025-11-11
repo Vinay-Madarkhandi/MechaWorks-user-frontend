@@ -13,41 +13,42 @@ import { toast } from "react-hot-toast";
 export const Appbar = () => {
   const { publicKey, signMessage } = useWallet();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-
-  const signAndSend = useCallback(async () => {
-    if (!publicKey || !signMessage || isAuthenticating) {
-      return;
-    }
-
-    // Check if user already has a valid token
-    if (isTokenValid()) {
-      return;
-    }
-
-    setIsAuthenticating(true);
-    try {
-      const message = new TextEncoder().encode("Sign into MechaWorks");
-      const signature = await signMessage(message);
-
-      const response = await axios.post(`${BACKEND_URL}/v1/user/signin`, {
-        signature,
-        publicKey: publicKey.toString(),
-      });
-
-      setToken(response.data.token);
-      toast.success("Successfully authenticated! 🎉");
-    } catch (error) {
-      console.error("Authentication error:", error);
-      toast.error("Failed to authenticate. Please try again.");
-    } finally {
-      setIsAuthenticating(false);
-    }
-  }, [publicKey, signMessage, isAuthenticating]);
+  const [hasSignedIn, setHasSignedIn] = useState(false);
 
   useEffect(() => {
+    const signAndSend = async () => {
+      if (!publicKey || !signMessage) {
+        setHasSignedIn(false);
+        return;
+      }
+
+      // Check if we already signed in for this wallet connection
+      if (hasSignedIn) {
+        return;
+      }
+
+      try {
+        const message = new TextEncoder().encode("Sign into MechaWorks");
+        const signature = await signMessage(message);
+
+        const response = await axios.post(`${BACKEND_URL}/v1/user/signin`, {
+          signature: {
+            data: Array.from(signature),
+          },
+          publicKey: publicKey.toString(),
+        });
+
+        setToken(response.data.token);
+        setHasSignedIn(true);
+        toast.success("Successfully authenticated! 🎉");
+      } catch (error) {
+        console.error("Authentication error:", error);
+        toast.error("Failed to authenticate. Please try again.");
+      }
+    };
+
     signAndSend();
-  }, [signAndSend]);
+  }, [publicKey, signMessage]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -99,12 +100,6 @@ export const Appbar = () => {
 
           {/* Wallet Connection */}
           <div className="flex items-center space-x-3">
-            {isAuthenticating && (
-              <div className="hidden sm:flex items-center space-x-2 text-violet-400 text-sm">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-violet-400 border-t-transparent"></div>
-                <span>Authenticating...</span>
-              </div>
-            )}
             <div className="wallet-adapter-button-trigger-wrapper">
               {publicKey ? <WalletDisconnectButton /> : <WalletMultiButton />}
             </div>
